@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Flax Pro - 30 Idiomas Global</title>
+    <title>Conversación Flax Pro</title>
     <style>
         :root {
             --primary: #007AFF;
@@ -16,68 +16,63 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
+        /* BARRA DE DESPLAZAMIENTO ESTILO COMPUTADORA */
+        ::-webkit-scrollbar { width: 10px; display: block; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; border: 2px solid #000; }
+
         body, html {
-            margin: 0; padding: 0; height: 100%; width: 100%;
+            margin: 0; padding: 0; min-height: 100%; width: 100%;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            overflow: hidden;
+            background-color: var(--bg); color: var(--text);
+            overflow-x: hidden; overflow-y: auto;
         }
 
-        /* Pantallas de Bienvenida */
-        #intro-overlay, #lang-setup-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+        /* Pantalla de Introducción (Solo 3 veces) */
+        #intro-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #1c1c1e 0%, #000 100%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 3000; padding: 30px; text-align: center;
+            z-index: 3000; padding: 30px; text-align: center; overflow-y: auto;
         }
 
-        .lang-grid {
-            display: grid; grid-template-columns: repeat(2, 1fr);
-            gap: 12px; width: 100%; max-width: 450px; margin-top: 20px;
-            max-height: 50vh; overflow-y: auto; padding: 15px;
-            background: rgba(28, 28, 30, 0.5); border-radius: 20px;
+        /* Modal de Instrucciones */
+        #modal-instrucciones {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); display: none; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 4000; padding: 25px;
         }
 
-        .lang-btn {
-            background: var(--surface); border: 2px solid transparent; color: white;
-            padding: 15px; border-radius: 15px; cursor: pointer; font-size: 0.9rem;
-            display: flex; align-items: center; gap: 10px;
+        .instrucciones-box {
+            background: var(--surface); padding: 20px; border-radius: 20px;
+            max-width: 500px; text-align: left; border: 1px solid var(--primary);
+            max-height: 80vh; overflow-y: auto;
         }
-
-        .lang-btn.selected { border-color: var(--primary); background: rgba(0, 122, 255, 0.1); }
 
         .title-main { font-size: 2.2rem; font-weight: 800; color: var(--primary); margin-bottom: 5px; }
+        .subtitle-main { font-size: 1.1rem; color: #8E8E93; margin-bottom: 20px; }
+
         .action-btn {
-            background: var(--primary); color: white; border: none; padding: 18px 60px;
-            border-radius: 18px; font-weight: 700; font-size: 1.2rem; cursor: pointer;
-            box-shadow: 0 10px 25px rgba(0, 122, 255, 0.4); margin-top: 20px;
+            background: var(--primary); color: white; border: none; padding: 15px 40px;
+            border-radius: 15px; font-weight: 700; font-size: 1.1rem; cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.4); margin-top: 15px;
         }
 
         /* Interfaz Principal */
-        .app-content { display: flex; flex-direction: column; height: 100vh; }
-        .panel { flex: 1; display: flex; flex-direction: column; padding: 20px; justify-content: space-between; }
-        .panel-top { transform: rotate(180deg); border-bottom: 0.5px solid #38383A; }
+        .app-content { display: flex; flex-direction: column; min-height: 100vh; padding-bottom: 40px; }
+        .panel { flex: 1; display: flex; flex-direction: column; padding: 25px 20px; justify-content: space-between; min-height: 45vh; }
+        .panel-top { transform: rotate(180deg); border-bottom: 0.5px solid #38383A; background: #050505; }
         
         .toolbar { display: flex; justify-content: space-between; align-items: center; }
-        .lang-select { 
-            background: #1C1C1E; color: white; border: 1px solid var(--primary);
-            padding: 10px; border-radius: 10px; width: 75%; font-size: 1rem;
-        }
+        .lang-select { background: #1C1C1E; color: white; border: 1px solid var(--primary); padding: 12px; border-radius: 12px; width: 70%; font-size: 1rem; outline: none; }
+        .repeat-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-size: 1.3rem; }
 
-        .display-box { 
-            flex-grow: 1; margin: 15px 0; display: flex; align-items: center; 
-            justify-content: center; text-align: center; font-size: 1.5rem; font-weight: 500;
-        }
+        .display-box { flex-grow: 1; margin: 20px 0; display: flex; align-items: center; justify-content: center; text-align: center; font-size: 1.6rem; font-weight: 500; }
 
-        .mic-btn {
-            width: 80px; height: 80px; border-radius: 50%; border: none;
-            background: var(--primary); color: white; font-size: 30px;
-            margin: 0 auto; cursor: pointer; transition: 0.3s;
-        }
-
+        .mic-btn { width: 85px; height: 85px; border-radius: 50%; border: none; background: var(--primary); color: white; font-size: 32px; margin: 0 auto; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .mic-btn.active { background: var(--accent-red); animation: pulse 1.2s infinite; }
+
+        .footer-btn { background: none; border: 1px solid #38383A; color: #8E8E93; padding: 10px 20px; border-radius: 10px; margin: 20px auto; cursor: pointer; display: block; font-size: 0.9rem; }
 
         @keyframes pulse {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.7); }
@@ -88,24 +83,36 @@
 </head>
 <body>
 
-    <div id="lang-setup-overlay">
-        <h1 class="title-main">Flax Pro</h1>
-        <p>Elige tu idioma / Choose your language</p>
-        <div class="lang-grid" id="grid-ui"></div>
-        <button class="action-btn" id="btn-cont" style="display:none" onclick="goToIntro()">CONTINUAR</button>
+    <div id="intro-overlay" style="display:none">
+        <h1 class="title-main">Conversación Flax</h1>
+        <p class="subtitle-main">Comienza Hablar Con Personas de Diferentes Idiomas</p>
+        <p style="line-height:1.6; color:#8e8e93; max-width:500px;">
+            Permite la interpretación de voz en tiempo real, traduciendo automáticamente frases habladas entre dos idiomas. Ideal para charlas cara a cara, usa el micrófono para detectar el idioma, traducir y reproducir en voz.
+        </p>
+        <button class="action-btn" onclick="closeIntro()">ENTENDIDO</button>
     </div>
 
-    <div id="intro-overlay" style="display:none">
-        <h1 class="title-main" id="intro-title">Instrucciones</h1>
-        <p id="intro-text" style="line-height:1.6; color:#8e8e93; max-width:500px;"></p>
-        <button class="action-btn" onclick="finishIntro()">ENTENDIDO</button>
+    <div id="modal-instrucciones" onclick="closeModal()">
+        <div class="instrucciones-box" onclick="event.stopPropagation()">
+            <h2 style="color:var(--primary); margin-top:0;">Nota Importante</h2>
+            <p>Si no escuchas algún idioma, asegúrate de tener descargado el paquete de voz en los ajustes de tu dispositivo.</p>
+            <hr style="border: 0.5px solid #38383A; margin: 15px 0;">
+            <p><strong>Sigue estos pasos en tu celular:</strong></p>
+            <p>1. Ve a <b>Ajustes > Administración General > Idioma e entrada</b>.</p>
+            <p>2. Busca <b>Texto a voz</b> (o Síntesis de voz) o "Texto para pronunciar".</p>
+            <p>3. En "Motor preferido" (Google), dale al icono de la tuerca <b>⚙️</b>.</p>
+            <p>4. Busca <b>"Instalar datos de voz"</b>.</p>
+            <p>5. Busca el idioma que quieres escuchar y dale a <b>descargar</b> (flechita hacia abajo).</p>
+            <p style="color:var(--secondary); font-weight:bold;">¡Una vez descargado, Flax empezará a hablar mágicamente!</p>
+            <button class="action-btn" style="width:100%" onclick="closeModal()">CERRAR</button>
+        </div>
     </div>
 
     <div class="app-content">
         <div class="panel panel-top">
             <div class="toolbar">
                 <select id="sel-top" class="lang-select" onchange="saveConfig()"></select>
-                <span id="lbl-guest" style="color:var(--secondary); font-weight:bold; font-size:12px">GUEST</span>
+                <button class="repeat-btn" onclick="manualSpeak('top')">🔊</button>
             </div>
             <div id="box-top" class="display-box">...</div>
             <button id="mic-top" class="mic-btn" onclick="startMic('top')">🎤</button>
@@ -114,11 +121,13 @@
         <div class="panel">
             <div class="toolbar">
                 <select id="sel-bottom" class="lang-select" onchange="saveConfig()"></select>
-                <span id="lbl-you" style="color:var(--primary); font-weight:bold; font-size:12px">TÚ</span>
+                <button class="repeat-btn" onclick="manualSpeak('bottom')">🔊</button>
             </div>
             <div id="box-bottom" class="display-box">Toca para hablar...</div>
             <button id="mic-bottom" class="mic-btn" onclick="startMic('bottom')">🎤</button>
         </div>
+
+        <button class="footer-btn" onclick="openModal()">Instrucciones</button>
     </div>
 
 <script>
@@ -126,51 +135,27 @@
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition = SpeechRec ? new SpeechRec() : null;
     let activeSide = null;
-    let uiLang = 'es';
 
-    // 30 Idiomas configurados para máxima compatibilidad
+    // LISTA DE 30 IDIOMAS ACTUALIZADA
     const languages = [
-        { c: "es-ES", n: "🇪🇸 Español" }, { c: "en-US", n: "🇺🇸 English" },
-        { c: "pt-BR", n: "🇧🇷 Português" }, { c: "zh-CN", n: "🇨🇳 Chinese" },
-        { c: "ja-JP", n: "🇯🇵 Japanese" }, { c: "hi-IN", n: "🇮🇳 Hindi" },
-        { c: "ar-SA", n: "🇸🇦 Arabic" }, { c: "ru-RU", n: "🇷🇺 Russian" },
-        { c: "de-DE", n: "🇩🇪 German" }, { c: "ko-KR", n: "🇰🇷 Korean" },
-        { c: "bn-BD", n: "🇧🇩 Bengali" }, { c: "fr-FR", n: "🇫🇷 French" },
-        { c: "he-IL", n: "🇮🇱 Hebrew" }, { c: "it-IT", n: "🇮🇹 Italian" },
-        { c: "tr-TR", n: "🇹🇷 Turkish" }, { c: "nl-NL", n: "🇳🇱 Dutch" },
-        { c: "pl-PL", n: "🇵🇱 Polish" }, { c: "vi-VN", n: "🇻🇳 Vietnamese" },
-        { c: "id-ID", n: "🇮🇩 Indonesian" }, { c: "th-TH", n: "🇹🇭 Thai" },
-        { c: "el-GR", n: "🇬🇷 Greek" }, { c: "da-DK", n: "🇩🇰 Danish" },
-        { c: "fi-FI", n: "🇫🇮 Finnish" }, { c: "no-NO", n: "🇳🇴 Norwegian" },
-        { c: "hu-HU", n: "🇭🇺 Hungarian" }, { c: "cs-CZ", n: "🇨🇿 Czech" },
-        { c: "ro-RO", n: "🇷🇴 Romanian" }, { c: "sk-SK", n: "🇸🇰 Slovak" },
-        { c: "uk-UA", n: "🇺🇦 Ukrainian" }, { c: "ms-MY", n: "🇲🇾 Malay" }
+        { c: "es-ES", n: "🇪🇸 Español" }, { c: "en-US", n: "🇺🇸 Inglés" },
+        { c: "pt-BR", n: "🇧🇷 Portugués" }, { c: "zh-CN", n: "🇨🇳 Chino" },
+        { c: "ja-JP", n: "🇯🇵 Japonés" }, { c: "hi-IN", n: "🇮🇳 India (Hindi)" },
+        { c: "ar-SA", n: "🇸🇦 Arabia Saudita" }, { c: "ru-RU", n: "🇷🇺 Ruso" },
+        { c: "de-DE", n: "🇩🇪 Alemán" }, { c: "ko-KR", n: "🇰🇷 Coreano" },
+        { c: "bn-BD", n: "🇧🇩 Bengalí" }, { c: "fr-FR", n: "🇫🇷 Francés" },
+        { c: "he-IL", n: "🇮🇱 Israel (Hebreo)" }, { c: "it-IT", n: "🇮🇹 Italiano" },
+        { c: "tr-TR", n: "🇹🇷 Turco" }, { c: "nl-NL", n: "🇳🇱 Holandés" },
+        { c: "pl-PL", n: "🇵🇱 Polaco" }, { c: "vi-VN", n: "🇻🇳 Vietnamita" },
+        { c: "id-ID", n: "🇮🇩 Indonesio" }, { c: "th-TH", n: "🇹🇭 Tailandés" },
+        { c: "el-GR", n: "🇬🇷 Griego" }, { c: "da-DK", n: "🇩🇰 Danés" },
+        { c: "fi-FI", n: "🇫🇮 Finlandés" }, { c: "no-NO", n: "🇳🇴 Noruego" },
+        { c: "hu-HU", n: "🇭🇺 Húngaro" }, { c: "cs-CZ", n: "🇨🇿 Checo" },
+        { c: "ro-RO", n: "🇷🇴 Rumano" }, { c: "uk-UA", n: "🇺🇦 Ucraniano" },
+        { c: "ms-MY", n: "🇲🇾 Malayo" }, { c: "sv-SE", n: "🇸🇪 Sueco" }
     ];
 
-    const uiDict = {
-        "es": { welcome: "Bienvenido", desc: "Permite la interpretacion de voz en tiempo real, traduciendo automaticamente frases habladas entre dos idiomas. ldeal para charlas cara a cara, usa el nicrofono para detectar el idioma, traducir y reproducir la voz.", btn: "INICIAR", guest: "INVITADO", you: "TÚ", tap: "Toca para hablar..." },
-        "en": { welcome: "Welcome", desc: "Tap the mic to speak. The app will translate and speak out your message in the other language automatically.", btn: "START", guest: "GUEST", you: "YOU", tap: "Tap to speak..." },
-        "ru": { welcome: "Добро пожаловать", desc: "Нажмите на микрофон, чтобы говорить. Приложение автоматически переведет и озвучит ваше сообщение на другом языке.", btn: "НАЧАТЬ", guest: "ГОСТЬ", you: "ВЫ", tap: "Нажмите, чтобы говорить..." }
-        // Se pueden añadir más traducciones de interfaz aquí siguiendo el mismo formato
-    };
-
     window.onload = () => {
-        // Cargar cuadrícula de idiomas UI
-        const grid = document.getElementById('grid-ui');
-        languages.slice(0, 20).forEach(lang => {
-            const btn = document.createElement('button');
-            btn.className = 'lang-btn';
-            btn.innerHTML = `<span>${lang.n.split(' ')[0]}</span> ${lang.n.split(' ')[1]}`;
-            btn.onclick = () => {
-                uiLang = lang.c.split('-')[0];
-                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                document.getElementById('btn-cont').style.display = 'block';
-            };
-            grid.appendChild(btn);
-        });
-
-        // Cargar Selectores de Voz
         const sTop = document.getElementById('sel-top');
         const sBot = document.getElementById('sel-bottom');
         languages.forEach(l => {
@@ -179,15 +164,10 @@
             sBot.innerHTML += opt;
         });
 
-        // Configuración por defecto solicitada
         sTop.value = localStorage.getItem('flax_top') || "en-US";
         sBot.value = localStorage.getItem('flax_bottom') || "es-ES";
 
-        // Verificar si mostrar introducción (máximo 3 veces)
-        if (localStorage.getItem('flax_ui_lang')) {
-            document.getElementById('lang-setup-overlay').style.display = 'none';
-            checkIntroCount();
-        }
+        checkIntro();
     };
 
     function saveConfig() {
@@ -195,42 +175,26 @@
         localStorage.setItem('flax_bottom', document.getElementById('sel-bottom').value);
     }
 
-    function checkIntroCount() {
+    function checkIntro() {
         let count = parseInt(localStorage.getItem('flax_intro_count') || "0");
-        if (count < 3) {
-            document.getElementById('intro-overlay').style.display = 'flex';
-            updateIntroTexts();
-        }
+        if (count < 3) document.getElementById('intro-overlay').style.display = 'flex';
     }
 
-    function updateIntroTexts() {
-        const lang = localStorage.getItem('flax_ui_lang') || 'es';
-        const d = uiDict[lang] || uiDict['es'];
-        document.getElementById('intro-title').innerText = d.welcome;
-        document.getElementById('intro-text').innerText = d.desc;
-        document.getElementById('lbl-guest').innerText = d.guest;
-        document.getElementById('lbl-you').innerText = d.you;
-        document.getElementById('box-bottom').innerText = d.tap;
-    }
-
-    function goToIntro() {
-        localStorage.setItem('flax_ui_lang', uiLang);
-        document.getElementById('lang-setup-overlay').style.display = 'none';
-        checkIntroCount();
-    }
-
-    function finishIntro() {
+    function closeIntro() {
         let count = parseInt(localStorage.getItem('flax_intro_count') || "0");
         localStorage.setItem('flax_intro_count', (count + 1).toString());
         document.getElementById('intro-overlay').style.display = 'none';
-        // Activar audio en móviles
         synth.speak(new SpeechSynthesisUtterance(""));
     }
 
+    function openModal() { document.getElementById('modal-instrucciones').style.display = 'flex'; }
+    function closeModal() { document.getElementById('modal-instrucciones').style.display = 'none'; }
+
     async function translate(text, from, to) {
-        const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from.split('-')[0]}&tl=${to.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
-        const data = await res.json();
-        return data[0][0][0];
+        try {
+            const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${from.split('-')[0]}&tl=${to.split('-')[0]}&dt=t&q=${encodeURI(text)}`);
+            const data = await res.json(); return data[0][0][0];
+        } catch(e) { return text; }
     }
 
     function startMic(side) {
@@ -244,14 +208,11 @@
     if (recognition) {
         recognition.onresult = async (e) => {
             const text = e.results[0][0].transcript;
-            const otherSide = activeSide === 'bottom' ? 'top' : 'bottom';
-            const toLang = document.getElementById(`sel-${otherSide}`).value;
-            
+            const other = activeSide === 'bottom' ? 'top' : 'bottom';
+            const toL = document.getElementById(`sel-${other}`).value;
             document.getElementById(`box-${activeSide}`).innerText = text;
-            const translated = await translate(text, recognition.lang, toLang);
-            
-            // Hablar
-            speak(translated, toLang, otherSide);
+            const res = await translate(text, recognition.lang, toL);
+            speak(res, toL, other);
         };
         recognition.onend = () => {
             document.querySelectorAll('.mic-btn').forEach(b => b.classList.remove('active'));
@@ -259,20 +220,21 @@
         };
     }
 
+    function manualSpeak(side) {
+        const text = document.getElementById(`box-${side}`).innerText;
+        const lang = document.getElementById(`sel-${side}`).value;
+        if (text !== "..." && text !== "") speak(text, lang, side);
+    }
+
     function speak(text, lang, side) {
         synth.cancel();
         const utt = new SpeechSynthesisUtterance(text);
         utt.lang = lang;
         document.getElementById(`box-${side}`).innerText = text;
-        
-        // Buscar voz específica del sistema
-        const voices = synth.getVoices();
-        let v = voices.find(voice => voice.lang === lang) || voices.find(voice => voice.lang.startsWith(lang.split('-')[0]));
+        const v = synth.getVoices().find(v => v.lang.startsWith(lang.split('-')[0]));
         if (v) utt.voice = v;
-        
         synth.speak(utt);
     }
-
     window.speechSynthesis.onvoiceschanged = () => synth.getVoices();
 </script>
 </body>
