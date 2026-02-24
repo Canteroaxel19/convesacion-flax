@@ -16,7 +16,7 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        /* BARRA DE DESPLAZAMIENTO ESTILO COMPUTADORA */
+        /* BARRA DE DESPLAZAMIENTO */
         ::-webkit-scrollbar { width: 10px; display: block; }
         ::-webkit-scrollbar-track { background: #000; }
         ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; border: 2px solid #000; }
@@ -28,7 +28,7 @@
             overflow-x: hidden; overflow-y: auto;
         }
 
-        /* Pantalla de Introducción (Solo 3 veces) */
+        /* Pantalla de Introducción */
         #intro-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #1c1c1e 0%, #000 100%);
@@ -72,7 +72,38 @@
         .mic-btn { width: 85px; height: 85px; border-radius: 50%; border: none; background: var(--primary); color: white; font-size: 32px; margin: 0 auto; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         .mic-btn.active { background: var(--accent-red); animation: pulse 1.2s infinite; }
 
-        .footer-btn { background: none; border: 1px solid #38383A; color: #8E8E93; padding: 10px 20px; border-radius: 10px; margin: 20px auto; cursor: pointer; display: block; font-size: 0.9rem; }
+        /* Estilo Nuevo para Botón Instrucciones */
+        .instrucciones-container { position: relative; width: fit-content; margin: 20px auto; }
+        
+        .footer-btn-nuevo { 
+            background: var(--primary); 
+            border: none; 
+            color: white; 
+            padding: 12px 25px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 1rem; 
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3);
+        }
+
+        /* Animación de la Mano */
+        .hand-pointer {
+            position: absolute;
+            bottom: -10px;
+            right: -20px;
+            font-size: 2rem;
+            pointer-events: none;
+            display: none; /* Se activa por JS */
+            animation: click-hand 1.5s infinite;
+            z-index: 10;
+        }
+
+        @keyframes click-hand {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-5px, -5px) scale(0.9); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
 
         @keyframes pulse {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.7); }
@@ -127,7 +158,10 @@
             <button id="mic-bottom" class="mic-btn" onclick="startMic('bottom')">🎤</button>
         </div>
 
-        <button class="footer-btn" onclick="openModal()">Instrucciones</button>
+        <div class="instrucciones-container">
+            <button class="footer-btn-nuevo" onclick="openModal()">Instrucciones</button>
+            <div id="hand-anim" class="hand-pointer">👆</div>
+        </div>
     </div>
 
 <script>
@@ -136,7 +170,6 @@
     let recognition = SpeechRec ? new SpeechRec() : null;
     let activeSide = null;
 
-    // LISTA DE 30 IDIOMAS ACTUALIZADA
     const languages = [
         { c: "es-ES", n: "🇪🇸 Español" }, { c: "en-US", n: "🇺🇸 Inglés" },
         { c: "pt-BR", n: "🇧🇷 Portugués" }, { c: "zh-CN", n: "🇨🇳 Chino" },
@@ -168,6 +201,7 @@
         sBot.value = localStorage.getItem('flax_bottom') || "es-ES";
 
         checkIntro();
+        checkHandAnimation();
     };
 
     function saveConfig() {
@@ -180,6 +214,15 @@
         if (count < 3) document.getElementById('intro-overlay').style.display = 'flex';
     }
 
+    // Lógica para mostrar la mano solo 2 veces
+    function checkHandAnimation() {
+        let handCount = parseInt(localStorage.getItem('flax_hand_count') || "0");
+        if (handCount < 2) {
+            document.getElementById('hand-anim').style.display = 'block';
+            localStorage.setItem('flax_hand_count', (handCount + 1).toString());
+        }
+    }
+
     function closeIntro() {
         let count = parseInt(localStorage.getItem('flax_intro_count') || "0");
         localStorage.setItem('flax_intro_count', (count + 1).toString());
@@ -187,7 +230,12 @@
         synth.speak(new SpeechSynthesisUtterance(""));
     }
 
-    function openModal() { document.getElementById('modal-instrucciones').style.display = 'flex'; }
+    function openModal() { 
+        document.getElementById('modal-instrucciones').style.display = 'flex'; 
+        // Ocultar la mano al hacer clic por primera vez
+        document.getElementById('hand-anim').style.display = 'none';
+    }
+    
     function closeModal() { document.getElementById('modal-instrucciones').style.display = 'none'; }
 
     async function translate(text, from, to) {
